@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  orders       Order[]
+  reservations Reservation[]
+  reviews      Review[]
+  createdAt    DateTime @default(now())
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  STAFF
+}
+
+model MenuCategory {
+  id           String     @id @default(uuid())
+  name         String
+  displayOrder Int        @default(0)
+  items        MenuItem[]
+}
+
+model MenuItem {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal
+  imageUrl    String?
+  tags        String[]
+  available   Boolean      @default(true)
+  category    MenuCategory @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  orderItems  OrderItem[]
+  reviews     Review[]
+}
+
+model RestaurantTable {
+  id           String        @id @default(uuid())
+  tableNumber  Int
+  capacity     Int
+  reservations Reservation[]
+}
+
+model Reservation {
+  id      String            @id @default(uuid())
+  date    DateTime
+  time    String
+  guests  Int
+  status  ReservationStatus @default(PENDING)
+  user    User              @relation(fields: [userId], references: [id])
+  userId  String
+  table   RestaurantTable   @relation(fields: [tableId], references: [id])
+  tableId String
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  orderType    OrderType
+  status       OrderStatus @default(PLACED)
+  subtotal     Decimal
+  tax          Decimal
+  deliveryFee  Decimal     @default(0)
+  total        Decimal
+  user         User        @relation(fields: [userId], references: [id])
+  userId       String
+  items        OrderItem[]
+  createdAt    DateTime    @default(now())
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  COMPLETED
+  CANCELLED
+}
+
+model OrderItem {
+  id             String   @id @default(uuid())
+  quantity       Int
+  price          Decimal
+  customizations String?
+  order          Order    @relation(fields: [orderId], references: [id])
+  orderId        String
+  menuItem       MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId     String
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String?
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId String
+  createdAt  DateTime @default(now())
+}
