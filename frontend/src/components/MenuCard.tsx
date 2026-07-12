@@ -3,15 +3,7 @@
 import React from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { toast } from 'react-hot-toast';
-
-interface MenuItem {
-  id: string;
-  name: string;
-  description?: string;
-  price: number | string;
-  imageUrl?: string;
-  tags: string[];
-}
+import type { MenuItem } from '@/types';
 
 export default function MenuCard({ item }: { item: MenuItem }) {
   const { addItem, toggleCart } = useCartStore();
