@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import api from '@/lib/api';
 import { Calendar, Clock, Users, Hash, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -49,7 +49,7 @@ export default function AdminReservations() {
   const [activeTab, setActiveTab] = useState('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const fetchReservations = async () => {
+  const fetchReservations = useCallback(async () => {
     try {
       const res = await api.get('/reservations');
       if (res.data.success) {
@@ -60,11 +60,13 @@ export default function AdminReservations() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchReservations();
-  }, []);
+    (async () => {
+      await fetchReservations();
+    })();
+  }, [fetchReservations]);
 
   const handleStatusUpdate = async (id: string, newStatus: ReservationStatus) => {
     setUpdatingId(id);

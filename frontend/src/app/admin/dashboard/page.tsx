@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
+import type { SalesDataPoint, TopItem, OrderDistributionItem } from '@/types';
 import { 
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
@@ -11,9 +12,9 @@ import { TrendingUp, ShoppingBag, Utensils, DollarSign } from 'lucide-react';
 const COLORS = ['#D9A441', '#A83B2C', '#24402F', '#211D18'];
 
 export default function AdminDashboard() {
-  const [salesData, setSalesData] = useState([]);
-  const [topItems, setTopItems] = useState<any[]>([]);
-  const [orderDistribution, setOrderDistribution] = useState([]);
+  const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
+  const [topItems, setTopItems] = useState<TopItem[]>([]);
+  const [orderDistribution, setOrderDistribution] = useState<OrderDistributionItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,13 +47,13 @@ export default function AdminDashboard() {
     );
   }
 
-  const totalSales = salesData.reduce((acc, curr: any) => acc + Number(curr.total), 0);
+  const totalSales = salesData.reduce((acc, curr: SalesDataPoint) => acc + Number(curr.total), 0);
 
   return (
     <div className="p-4 sm:p-8 md:p-12 max-w-[1600px] mx-auto animate-in fade-in duration-500">
       <div className="mb-10">
         <h1 className="text-3xl md:text-4xl font-serif font-bold text-bottle">Dashboard Overview</h1>
-        <p className="text-ink/60 mt-2 font-medium">Welcome back to the Zaiqa Admin Panel. Here's what's happening today.</p>
+        <p className="text-ink/60 mt-2 font-medium">Welcome back to the Zaiqa Admin Panel. Here&apos;s what&apos;s happening today.</p>
       </div>
 
       {/* Stat Cards */}
@@ -127,7 +128,7 @@ export default function AdminDashboard() {
                     nameKey="orderType"
                     stroke="none"
                   >
-                    {orderDistribution.map((entry: any, index) => (
+                    {orderDistribution.map((entry: OrderDistributionItem, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

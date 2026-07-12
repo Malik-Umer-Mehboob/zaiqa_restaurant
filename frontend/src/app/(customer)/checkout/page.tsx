@@ -8,6 +8,7 @@ import * as z from 'zod';
 import { useCartStore } from '@/store/cartStore';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import { AxiosError } from 'axios';
 
 const checkoutSchema = z.object({
   orderType: z.enum(['DINE_IN', 'TAKEAWAY', 'DELIVERY']),
@@ -93,9 +94,13 @@ export default function CheckoutPage() {
       clearCart();
       window.location.href = sessionRes.data.data.url;
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to place order. Please ensure you are logged in.');
+      let message = 'Failed to place order. Please ensure you are logged in.';
+      if (err instanceof AxiosError) {
+        message = err.response?.data?.message || message;
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -168,7 +173,7 @@ export default function CheckoutPage() {
                 </>
               )}
             </button>
-            <p className="text-center text-sm text-ink/50 mt-3 font-medium">You will be redirected to Stripe's secure checkout. Test card: <span className="font-mono font-bold text-bottle">4242 4242 4242 4242</span></p>
+            <p className="text-center text-sm text-ink/50 mt-3 font-medium">You will be redirected to Stripe&apos;s secure checkout. Test card: <span className="font-mono font-bold text-bottle">4242 4242 4242 4242</span></p>
           </form>
         </div>
 

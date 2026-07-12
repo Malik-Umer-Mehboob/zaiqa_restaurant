@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { AxiosError } from 'axios';
 
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(50, 'Name must be 50 characters or less'),
@@ -43,8 +44,8 @@ export default function RegisterPage() {
       } else {
         toast.error("Registration failed, please try again");
       }
-    } catch (err: any) {
-      if (err.response?.status === 409) {
+    } catch (err: unknown) {
+      if (err instanceof AxiosError && err.response?.status === 409) {
         toast.error("This email is already registered");
       } else {
         toast.error("Registration failed, please try again");

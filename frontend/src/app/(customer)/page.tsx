@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import MenuCard from '@/components/MenuCard';
 import FeaturedSection from '@/components/FeaturedSection';
+import type { MenuCategory } from '@/types';
 
 async function getFeaturedItems() {
   try {
@@ -9,7 +9,7 @@ async function getFeaturedItems() {
     });
     const json = await res.json();
     if (json.success && json.data.length > 0) {
-      const allItems = json.data.flatMap((cat: any) => cat.items || []);
+      const allItems = json.data.flatMap((cat: MenuCategory) => cat.items || []);
       return allItems.slice(0, 3);
     }
     return [];

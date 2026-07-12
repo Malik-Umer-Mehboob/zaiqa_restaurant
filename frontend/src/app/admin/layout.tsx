@@ -8,28 +8,31 @@ import { LayoutDashboard, ShoppingBag, Utensils, Calendar, LogOut, Menu, X } fro
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [adminUser, setAdminUser] = useState<{ name?: string; email?: string } | null>(null);
+  const [adminUser] = useState<{ name?: string; email?: string } | null>(() => {
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch (e) {
+          console.error('Error parsing admin user from localStorage', e);
+        }
+      }
+    }
+    return null;
+  });
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     // Set document title
     document.title = 'Admin Dashboard | Zaiqa';
-
-    // Get user details from localStorage
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        setAdminUser(JSON.parse(userStr));
-      } catch (e) {
-        console.error('Error parsing admin user from localStorage', e);
-      }
-    }
   }, []);
 
   // Close sidebar on pathname changes (mobile navigation)
   useEffect(() => {
-    setIsSidebarOpen(false);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsSidebarOpen(false); // Resetting UI state on navigation is an intentional exception to this rule.
   }, [pathname]);
 
   const handleLogout = () => {

@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { AxiosError } from 'axios';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Invalid email address'),
@@ -48,8 +49,13 @@ function LoginFormContent() {
       } else {
         toast.error("Invalid email or password");
       }
-    } catch (err: any) {
-      toast.error("Invalid email or password");
+    } catch (err: unknown) {
+      console.error(err);
+      let message = 'Invalid email or password';
+      if (err instanceof AxiosError) {
+        message = err.response?.data?.message || message;
+      }
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +119,7 @@ function LoginFormContent() {
       </form>
 
       <div className="mt-8 text-center text-sm text-ink/60">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/register" className="text-turmeric hover:underline font-bold">
           Register
         </Link>

@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import socket from '@/lib/socket';
 import OrderStatusTimeline from '@/components/OrderStatusTimeline';
+import { AxiosError } from 'axios';
+import type { Order, OrderItem } from '@/types';
 
 export default function TrackOrderPage({ params }: { params: Promise<{ orderId: string }> }) {
   const unwrappedParams = use(params);
   const orderId = unwrappedParams.orderId;
   
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -24,10 +26,14 @@ export default function TrackOrderPage({ params }: { params: Promise<{ orderId: 
         if (res.data.success && mounted) {
           setOrder(res.data.data);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (mounted) {
           console.error(err);
-          setError(err.response?.data?.message || 'Failed to load order. Are you logged in?');
+          let message = 'Failed to load order. Are you logged in?';
+          if (err instanceof AxiosError) {
+            message = err.response?.data?.message || message;
+          }
+          setError(message);
         }
       } finally {
         if (mounted) setLoading(false);
@@ -52,8 +58,8 @@ export default function TrackOrderPage({ params }: { params: Promise<{ orderId: 
     // Join the specific room for this order
     socket.emit('join_order_room', orderId);
 
-    const handleStatusUpdate = (data: { status: string }) => {
-      setOrder((prev: any) => {
+    const handleStatusUpdate = (data: { status: Order['status'] }) => {
+      setOrder((prev: Order | null) => {
         if (!prev) return prev;
         return { ...prev, status: data.status };
       });
@@ -124,7 +130,7 @@ export default function TrackOrderPage({ params }: { params: Promise<{ orderId: 
           </h3>
           
           <div className="space-y-5 mb-8">
-            {order.items.map((item: any) => (
+            {order.items?.map((item: OrderItem) => (
               <div key={item.id} className="flex justify-between items-start p-4 bg-basmati rounded-xl shadow-sm border border-bottle/5 hover:border-turmeric/30 transition-colors">
                 <div className="flex gap-4">
                   <span className="font-bold text-bottle bg-turmeric/20 px-3 py-1 rounded-md h-fit text-sm">{item.quantity}x</span>

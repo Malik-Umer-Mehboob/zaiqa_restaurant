@@ -1,8 +1,10 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Header from './Header';
+import dynamic from 'next/dynamic';
 import CartDrawer from './CartDrawer';
+
+const Header = dynamic(() => import('./Header'), { ssr: false });
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

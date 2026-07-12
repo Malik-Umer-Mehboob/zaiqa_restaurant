@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import api from '@/lib/api';
-import socket from '@/lib/socket';
 import { toast } from 'react-hot-toast';
+import type { Order, OrderItem } from '@/types';
 
 export default function AdminOrders() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const url = statusFilter ? `/orders?status=${statusFilter}` : '/orders';
       const res = await api.get(url);
@@ -22,15 +22,17 @@ export default function AdminOrders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
-    fetchOrders();
+    (async () => {
+      await fetchOrders();
+    })();
 
     // Setup polling as a robust fallback for new orders coming in
     const interval = setInterval(fetchOrders, 10000);
     return () => clearInterval(interval);
-  }, [statusFilter]);
+  }, [fetchOrders]);
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
@@ -107,7 +109,7 @@ export default function AdminOrders() {
                     </td>
                     <td className="p-5 text-sm text-ink/80 max-w-[300px] truncate whitespace-normal">
                       <div className="font-semibold line-clamp-2">
-                        {order.items.map((i:any) => `${i.quantity}x ${i.menuItem.name}`).join(', ')}
+                        {order.items?.map((i: OrderItem) => `${i.quantity}x ${i.menuItem?.name}`).join(', ')}
                       </div>
                     </td>
                     <td className="p-5 font-bold text-chili text-lg">${Number(order.total).toFixed(2)}</td>

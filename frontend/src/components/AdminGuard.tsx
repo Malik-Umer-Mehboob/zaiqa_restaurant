@@ -24,9 +24,9 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
       if (payload.role !== 'ADMIN') {
         router.push('/');
       } else {
-        setIsAuthorized(true);
+        Promise.resolve().then(() => setIsAuthorized(true));
       }
-    } catch (e) {
+    } catch {
       localStorage.removeItem('token');
       router.push('/login');
     }

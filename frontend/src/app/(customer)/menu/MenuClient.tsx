@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, Variants } from 'framer-motion';
 import MenuCard from '@/components/MenuCard';
+import type { MenuCategory, MenuItem } from '@/types';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -14,7 +15,7 @@ const cardVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
 };
 
-export default function MenuClient({ initialCategories }: { initialCategories: any[] }) {
+export default function MenuClient({ initialCategories }: { initialCategories: MenuCategory[] }) {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -30,7 +31,7 @@ export default function MenuClient({ initialCategories }: { initialCategories: a
   // Apply search filter
   if (searchQuery.trim() !== '') {
     const lowerQuery = searchQuery.toLowerCase();
-    itemsToDisplay = itemsToDisplay.filter((item: any) => 
+    itemsToDisplay = itemsToDisplay.filter((item: MenuItem) =>  
       item.name.toLowerCase().includes(lowerQuery) || 
       (item.description && item.description.toLowerCase().includes(lowerQuery)) ||
       (item.tags && item.tags.some((tag: string) => tag.toLowerCase().includes(lowerQuery)))
@@ -96,7 +97,7 @@ export default function MenuClient({ initialCategories }: { initialCategories: a
           viewport={{ once: true, amount: 0.05 }}
           key={activeCategory + searchQuery}  // re-trigger animation on filter change
         >
-          {itemsToDisplay.map((item: any) => (
+          {itemsToDisplay.map((item: MenuItem) => (
             <motion.div key={item.id} variants={cardVariants}>
               <MenuCard item={item} />
             </motion.div>

@@ -45,7 +45,7 @@ export default function OrderStatusTimeline({ currentStatus, orderType }: Props)
           const isCurrent = index === currentIndex;
           const isPending = index > currentIndex;
 
-          let displayLabel = step.replace(/_/g, ' ');
+          const displayLabel = step.replace(/_/g, ' ');
 
           return (
             <div key={step} className="relative z-10 flex flex-col items-center">

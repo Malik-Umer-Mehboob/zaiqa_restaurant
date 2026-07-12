@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import { AxiosError } from 'axios';
 
 const reservationSchema = z.object({
   date: z.string().min(1, 'Date is required'),
@@ -54,9 +55,13 @@ export default function ReservationsPage() {
       } else {
         toast.error(res.data.message || 'Failed to request reservation');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to make reservation. Please ensure you are logged in to reserve a table.');
+      let message = 'Failed to make reservation. Please ensure you are logged in to reserve a table.';
+      if (err instanceof AxiosError) {
+        message = err.response?.data?.message || message;
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }

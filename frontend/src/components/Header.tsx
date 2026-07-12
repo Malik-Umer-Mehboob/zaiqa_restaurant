@@ -16,23 +16,22 @@ interface User {
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { items, toggleCart } = useCartStore();
-  const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    setMounted(true);
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    if (token && userStr) {
-      try {
-        setUser(JSON.parse(userStr));
-      } catch (e) {
-        console.error('Error parsing user from localStorage', e);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('user');
+      if (token && userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch (e) {
+          console.error('Error parsing user from localStorage', e);
+        }
       }
     }
-  }, []);
+    return null;
+  });
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const router = useRouter();
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -83,7 +82,7 @@ export default function Header() {
             Reservations
           </Link>
           
-          {mounted && user ? (
+          {user ? (
             <div className="relative">
               <button
                 onClick={(e) => {
@@ -172,7 +171,7 @@ export default function Header() {
               Reservations
             </Link>
             
-            {mounted && user ? (
+            {user ? (
               <>
                 {user.role === 'ADMIN' ? (
                   <Link
@@ -216,7 +215,7 @@ export default function Header() {
               className="text-left w-full hover:text-turmeric transition-colors duration-200 py-2 border-b border-white/5 font-semibold focus:outline-none flex items-center gap-2 cursor-pointer"
             >
               <span>Cart</span>
-              {mounted && itemCount > 0 && (
+              {itemCount > 0 && (
                 <span className="bg-chili text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm animate-in zoom-in">
                   {itemCount}
                 </span>

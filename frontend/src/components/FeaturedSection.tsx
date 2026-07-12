@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
 import MenuCard from '@/components/MenuCard';
+import type { MenuItem } from '@/types';
 
 const containerVariants: Variants = {
   hidden: {},
@@ -18,7 +19,7 @@ const cardVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 };
 
-export default function FeaturedSection({ featuredItems }: { featuredItems: any[] }) {
+export default function FeaturedSection({ featuredItems }: { featuredItems: MenuItem[] }) {
   return (
     <section>
       <div className="text-center mb-12">
@@ -34,7 +35,7 @@ export default function FeaturedSection({ featuredItems }: { featuredItems: any[
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {featuredItems.map((item: any) => (
+          {featuredItems.map((item: MenuItem) => (
             <motion.div key={item.id} variants={cardVariants}>
               <MenuCard item={item} />
             </motion.div>

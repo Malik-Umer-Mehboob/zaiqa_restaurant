@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import api from '@/lib/api';
 import { Pencil, Trash2, Plus, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { AxiosError } from 'axios';
+import type { MenuCategory, MenuItem } from '@/types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const CATS_PER_PAGE = 4;
@@ -49,12 +51,12 @@ function PaginationControls({
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function AdminMenu() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -70,7 +72,7 @@ export default function AdminMenu() {
 
   // Category State
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const [isCategorySubmitting, setIsCategorySubmitting] = useState(false);
 
@@ -105,11 +107,13 @@ export default function AdminMenu() {
   }, []);
 
   useEffect(() => {
-    fetchMenu();
+    (async () => {
+      await fetchMenu();
+    })();
   }, [fetchMenu]);
 
   // ─── Category actions ──────────────────────────────────────────────────────
-  const openCategoryModal = (category?: any) => {
+  const openCategoryModal = (category?: MenuCategory | null) => {
     if (category) {
       setEditingCategory(category);
       setCategoryName(category.name);
@@ -120,7 +124,7 @@ export default function AdminMenu() {
     setIsCategoryModalOpen(true);
   };
 
-  const handleDeleteCategory = async (category: any) => {
+  const handleDeleteCategory = async (category: MenuCategory) => {
     if (category.items && category.items.length > 0) {
       toast.error(
         `Cannot delete category "${category.name}": There are still ${category.items.length} items attached to it. Please delete or move those items first.`
@@ -138,9 +142,13 @@ export default function AdminMenu() {
       } else {
         toast.error(res.data.message || 'Failed to delete category');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'An error occurred while deleting the category.');
+      let message = 'An error occurred while deleting the category.';
+      if (err instanceof AxiosError) {
+        message = err.response?.data?.message || message;
+      }
+      toast.error(message);
     }
   };
 
@@ -164,9 +172,13 @@ export default function AdminMenu() {
           fetchMenu();
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to save category');
+      let message = 'Failed to save category';
+      if (err instanceof AxiosError) {
+        message = err.response?.data?.message || message;
+      }
+      toast.error(message);
     } finally {
       setIsCategorySubmitting(false);
     }
@@ -211,7 +223,7 @@ export default function AdminMenu() {
     }
   };
 
-  const openModal = (item?: any) => {
+  const openModal = (item?: MenuItem | null) => {
     if (item) {
       setEditingItem(item);
       setFormData({
@@ -263,9 +275,13 @@ export default function AdminMenu() {
       }
       setIsModalOpen(false);
       fetchMenu();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to save menu item');
+      let message = 'Failed to save menu item';
+      if (err instanceof AxiosError) {
+        message = err.response?.data?.message || message;
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -361,7 +377,7 @@ export default function AdminMenu() {
       ) : (
         <div className="space-y-10">
           {categories.map((category) => {
-            const allItems: any[] = category.items ?? [];
+            const allItems: MenuItem[] = category.items ?? [];
             const totalItemPages = Math.max(1, Math.ceil(allItems.length / ITEMS_PER_PAGE));
             const currentItemPage = Math.min(getItemPage(category.id), totalItemPages);
             const pagedItems = allItems.slice(
@@ -393,7 +409,7 @@ export default function AdminMenu() {
                     </thead>
                     <tbody className="divide-y divide-bottle/5">
                       {pagedItems.length > 0 ? (
-                        pagedItems.map((item: any) => (
+                        pagedItems.map((item: MenuItem) => (
                           <tr key={item.id} className="hover:bg-basmati/20 transition-colors group">
                             <td className="p-5">
                               {item.imageUrl ? (

@@ -5,20 +5,18 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
+import { AxiosError } from 'axios';
+import type { Order, OrderItem } from '@/types';
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
-  const [order, setOrder] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(!!orderId);
+  const [error, setError] = useState(orderId ? '' : 'Order information missing.');
 
   useEffect(() => {
-    if (!orderId) {
-      setError('Order information missing.');
-      setLoading(false);
-      return;
-    }
+    if (!orderId) return;
 
     const fetchOrder = async () => {
       try {
@@ -29,8 +27,12 @@ function PaymentSuccessContent() {
         } else {
           setError(res.data.message || 'Could not fetch order details.');
         }
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Could not fetch order details.');
+      } catch (err: unknown) {
+        let message = 'Could not fetch order details.';
+        if (err instanceof AxiosError) {
+          message = err.response?.data?.message || message;
+        }
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -83,7 +85,7 @@ function PaymentSuccessContent() {
               </div>
             </div>
             <div className="space-y-3 mb-5">
-              {order.items.map((item: any) => (
+              {order.items?.map((item: OrderItem) => (
                 <div key={item.id} className="flex justify-between items-center">
                   <span className="font-medium text-ink">
                     <span className="font-bold text-turmeric">{item.quantity}x</span> {item.menuItem.name}
