@@ -2,45 +2,80 @@ const prisma = require('../config/db');
 
 const createReservation = async (req, res) => {
   try {
-    const { date, time, guests, tableId } = req.body;
+    let { date, time, guests, tableId } = req.body;
     const userId = req.user.userId;
 
-    if (!date || !time || !guests || !tableId) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    if (!date || !time || !guests) {
+      return res.status(400).json({ success: false, message: 'Missing required fields (date, time, guests)' });
     }
 
     const reservationDate = new Date(date);
-    
-    // Check if table exists and has capacity
-    const table = await prisma.restaurantTable.findUnique({ where: { id: tableId } });
-    if (!table) {
-      return res.status(404).json({ success: false, message: 'Table not found' });
-    }
-    if (guests > table.capacity) {
-      return res.status(400).json({ success: false, message: `Table capacity is only ${table.capacity} guests` });
-    }
+    const parsedGuests = parseInt(guests);
 
-    // Conflict check
-    const existingReservation = await prisma.reservation.findFirst({
-      where: {
-        tableId,
-        date: reservationDate,
-        time,
-        status: {
-          in: ['PENDING', 'CONFIRMED']
+    if (tableId) {
+      // Check if table exists and has capacity
+      const table = await prisma.restaurantTable.findUnique({ where: { id: tableId } });
+      if (!table) {
+        return res.status(404).json({ success: false, message: 'Table not found' });
+      }
+      if (parsedGuests > table.capacity) {
+        return res.status(400).json({ success: false, message: `Table capacity is only ${table.capacity} guests` });
+      }
+
+      // Conflict check
+      const existingReservation = await prisma.reservation.findFirst({
+        where: {
+          tableId,
+          date: reservationDate,
+          time,
+          status: {
+            in: ['PENDING', 'CONFIRMED']
+          }
+        }
+      });
+
+      if (existingReservation) {
+        return res.status(409).json({ success: false, message: 'Table is already reserved for this date and time' });
+      }
+    } else {
+      // Auto-assign table
+      const availableTables = await prisma.restaurantTable.findMany({
+        where: {
+          capacity: { gte: parsedGuests }
+        },
+        orderBy: { capacity: 'asc' } // Try to use the smallest table that fits
+      });
+
+      let foundTableId = null;
+      for (const t of availableTables) {
+        const conflict = await prisma.reservation.findFirst({
+          where: {
+            tableId: t.id,
+            date: reservationDate,
+            time,
+            status: {
+              in: ['PENDING', 'CONFIRMED']
+            }
+          }
+        });
+        if (!conflict) {
+          foundTableId = t.id;
+          break;
         }
       }
-    });
 
-    if (existingReservation) {
-      return res.status(409).json({ success: false, message: 'Table is already reserved for this date and time' });
+      if (!foundTableId) {
+        return res.status(400).json({ success: false, message: 'No tables available for this date and time' });
+      }
+      
+      tableId = foundTableId;
     }
 
     const reservation = await prisma.reservation.create({
       data: {
         date: reservationDate,
         time,
-        guests: parseInt(guests),
+        guests: parsedGuests,
         tableId,
         userId,
         status: 'PENDING'

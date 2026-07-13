@@ -15,7 +15,11 @@ const createOrder = async (req, res) => {
     
     // Fetch all items from DB to get actual prices
     const menuItems = await prisma.menuItem.findMany({
-      where: { id: { in: itemIds } }
+      where: {
+        id: { in: itemIds },
+        isDeleted: false,
+        available: true
+      }
     });
 
     // Create a map for quick price lookup

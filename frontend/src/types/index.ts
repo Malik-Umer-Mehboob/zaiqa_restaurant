@@ -8,6 +8,7 @@ export interface MenuItem {
   price: number;
   imageUrl?: string;
   available: boolean;
+  isDeleted: boolean;
   tags?: string[];
   categoryId: string;
 }
@@ -64,13 +65,16 @@ export interface SalesDataPoint {
 }
 
 export interface TopItem {
-  _count: { id: number };
-  menuItem: { name: string };
+  id: string;
+  name: string;
+  imageUrl: string | null;
+  totalSold: number;
+  revenue: number;
 }
 
 export interface OrderDistributionItem {
-  orderType: string;
-  _count: { id: number };
+  name: string;
+  value: number;
 }
 
 export interface AdminMenuCategory {
@@ -86,5 +90,6 @@ export interface AdminMenuItem {
   price: number;
   imageUrl?: string;
   available: boolean;
+  isDeleted: boolean;
   categoryId: string;
 }

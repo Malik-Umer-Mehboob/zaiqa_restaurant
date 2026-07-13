@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Package } from 'lucide-react';
 import CartButton from './CartButton';
 import { useCartStore } from '@/store/cartStore';
 
@@ -81,6 +81,13 @@ export default function Header() {
           <Link href="/reservations" className="hover:text-turmeric transition-colors duration-200">
             Reservations
           </Link>
+
+          {user && (
+            <Link href="/my-orders" className="hover:text-turmeric transition-colors duration-200 flex items-center gap-1.5">
+              <Package size={16} />
+              My Orders
+            </Link>
+          )}
           
           {user ? (
             <div className="relative">
@@ -173,6 +180,14 @@ export default function Header() {
             
             {user ? (
               <>
+                <Link
+                  href="/my-orders"
+                  onClick={handleLinkClick}
+                  className="hover:text-turmeric transition-colors duration-200 py-2 border-b border-white/5 flex items-center gap-2"
+                >
+                  <Package size={16} />
+                  My Orders
+                </Link>
                 {user.role === 'ADMIN' ? (
                   <Link
                     href="/admin/dashboard"

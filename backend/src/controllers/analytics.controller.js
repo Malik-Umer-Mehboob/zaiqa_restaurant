@@ -58,6 +58,7 @@ const getTopItems = async (req, res) => {
       by: ['menuItemId'],
       _sum: {
         quantity: true,
+        price: true,
       },
       orderBy: {
         _sum: {
@@ -82,7 +83,8 @@ const getTopItems = async (req, res) => {
         id: orderItem.menuItemId,
         name: menuItem ? menuItem.name : 'Unknown Item',
         imageUrl: menuItem ? menuItem.imageUrl : null,
-        totalSold: orderItem._sum.quantity
+        totalSold: orderItem._sum.quantity,
+        revenue: orderItem._sum.price ? parseFloat(orderItem._sum.price) : 0
       };
     });
 

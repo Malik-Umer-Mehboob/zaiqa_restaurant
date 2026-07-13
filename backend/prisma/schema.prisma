@@ -41,6 +41,7 @@ model MenuItem {
   imageUrl    String?
   tags        String[]
   available   Boolean      @default(true)
+  isDeleted   Boolean      @default(false)
   category    MenuCategory @relation(fields: [categoryId], references: [id])
   categoryId  String
   orderItems  OrderItem[]

@@ -125,9 +125,11 @@ export default function AdminMenu() {
   };
 
   const handleDeleteCategory = async (category: MenuCategory) => {
-    if (category.items && category.items.length > 0) {
+    // Only count items that are NOT soft-deleted
+    const activeItems = category.items ? category.items.filter(item => !item.isDeleted) : [];
+    if (activeItems.length > 0) {
       toast.error(
-        `Cannot delete category "${category.name}": There are still ${category.items.length} items attached to it. Please delete or move those items first.`
+        `Cannot delete category "${category.name}": There are still ${activeItems.length} active items attached to it. Please delete or move those items first.`
       );
       return;
     }

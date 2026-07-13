@@ -1,12 +1,30 @@
+const jwt = require('jsonwebtoken');
 const prisma = require('../config/db');
 const cloudinary = require('../config/cloudinary');
 
 const getAllMenu = async (req, res) => {
   try {
+    // Check if the user is an admin to decide if we should show unavailable items
+    let isAdmin = false;
+    const authHeader = req.header('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded.role === 'ADMIN') {
+          isAdmin = true;
+        }
+      } catch (error) {
+        // Token verification failed or invalid, treat as non-admin
+      }
+    }
+
     const menu = await prisma.menuCategory.findMany({
       include: {
         items: {
-          where: { available: true }
+          where: isAdmin
+            ? { isDeleted: false }
+            : { available: true, isDeleted: false }
         }
       },
       orderBy: { displayOrder: 'asc' }
@@ -29,7 +47,7 @@ const getMenuItem = async (req, res) => {
       }
     });
 
-    if (!item) {
+    if (!item || item.isDeleted) {
       return res.status(404).json({ success: false, message: 'Menu item not found' });
     }
 
@@ -121,7 +139,7 @@ const updateMenuItem = async (req, res) => {
     const { name, description, price, categoryId, tags, available } = req.body;
 
     const existingItem = await prisma.menuItem.findUnique({ where: { id } });
-    if (!existingItem) {
+    if (!existingItem || existingItem.isDeleted) {
       return res.status(404).json({ success: false, message: 'Menu item not found' });
     }
 
@@ -166,10 +184,31 @@ const deleteMenuItem = async (req, res) => {
     const { id } = req.params;
     
     const item = await prisma.menuItem.findUnique({ where: { id } });
-    if (!item) {
+    if (!item || item.isDeleted) {
       return res.status(404).json({ success: false, message: 'Menu item not found' });
     }
 
+    // Check if the item is referenced in any orders
+    const orderItemsCount = await prisma.orderItem.count({
+      where: { menuItemId: id }
+    });
+
+    if (orderItemsCount > 0) {
+      // Soft delete
+      await prisma.menuItem.update({
+        where: { id },
+        data: {
+          available: false,
+          isDeleted: true
+        }
+      });
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Menu item has order history; soft-deleted successfully' 
+      });
+    }
+
+    // Hard delete
     await prisma.menuItem.delete({ where: { id } });
     res.status(200).json({ success: true, message: 'Menu item deleted successfully' });
   } catch (error) {
@@ -183,7 +222,7 @@ const toggleAvailability = async (req, res) => {
     const { id } = req.params;
     
     const item = await prisma.menuItem.findUnique({ where: { id } });
-    if (!item) {
+    if (!item || item.isDeleted) {
       return res.status(404).json({ success: false, message: 'Menu item not found' });
     }
 
@@ -224,12 +263,29 @@ const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if category has items
-    const itemsCount = await prisma.menuItem.count({
-      where: { categoryId: id }
+    // First, purge any soft-deleted items in this category
+    // (items that were soft-deleted because they had order history)
+    await prisma.orderItem.deleteMany({
+      where: {
+        menuItem: {
+          categoryId: id,
+          isDeleted: true
+        }
+      }
+    });
+    await prisma.menuItem.deleteMany({
+      where: {
+        categoryId: id,
+        isDeleted: true
+      }
     });
 
-    if (itemsCount > 0) {
+    // Now check if there are still active (non-deleted) items in the category
+    const activeItemsCount = await prisma.menuItem.count({
+      where: { categoryId: id, isDeleted: false }
+    });
+
+    if (activeItemsCount > 0) {
       return res.status(400).json({ 
         success: false, 
         message: 'Cannot delete category: it has menu items attached to it. Please delete or move the items first.' 

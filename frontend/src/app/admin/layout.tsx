@@ -4,7 +4,7 @@ import AdminGuard from '@/components/AdminGuard';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { LayoutDashboard, ShoppingBag, Utensils, Calendar, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Utensils, Calendar, LogOut, Menu, X, Table as TableIcon } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -110,6 +110,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <Calendar size={20} className="text-white/50 group-hover:text-turmeric transition-colors" />
               Reservations
+            </Link>
+            <Link 
+              href="/admin/tables" 
+              className={`flex items-center gap-4 px-5 py-3.5 rounded-xl hover:bg-white/5 hover:text-turmeric transition-all font-semibold group ${
+                pathname === '/admin/tables' ? 'bg-white/10 text-turmeric' : ''
+              }`}
+            >
+              <TableIcon size={20} className="text-white/50 group-hover:text-turmeric transition-colors" />
+              Tables
             </Link>
           </nav>
           
