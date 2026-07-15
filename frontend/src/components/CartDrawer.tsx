@@ -2,6 +2,7 @@
 
 import { useCartStore } from '@/store/cartStore';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CartDrawer() {
   const { items, isOpen, toggleCart, updateQuantity, removeItem, getSubtotal } = useCartStore();
@@ -44,7 +45,7 @@ export default function CartDrawer() {
             items.map(item => (
               <div key={item.id} className="flex gap-4 p-4 bg-basmati rounded-xl shadow-sm border border-bottle/5">
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.name} className="w-24 h-24 object-cover rounded-lg" />
+                  <Image src={item.imageUrl} alt={item.name} width={96} height={96} className="w-24 h-24 object-cover rounded-lg" />
                 ) : (
                   <div className="w-24 h-24 bg-basmati/50 rounded-lg flex items-center justify-center text-xs text-bottle/50 text-center p-1">No Image</div>
                 )}

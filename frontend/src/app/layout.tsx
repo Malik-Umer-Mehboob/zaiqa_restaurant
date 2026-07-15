@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
-      <body className="bg-basmati text-ink font-sans antialiased min-h-screen flex flex-col">
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <body className="bg-basmati text-ink font-sans antialiased min-h-screen flex flex-col" suppressHydrationWarning>
         <Toaster position="top-center" />
         <LayoutWrapper>
           {children}

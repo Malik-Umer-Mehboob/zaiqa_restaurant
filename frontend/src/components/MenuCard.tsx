@@ -3,6 +3,7 @@
 import React from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { toast } from 'react-hot-toast';
+import Image from 'next/image';
 import type { MenuItem } from '@/types';
 
 export default function MenuCard({ item }: { item: MenuItem }) {
@@ -24,7 +25,7 @@ export default function MenuCard({ item }: { item: MenuItem }) {
     <div className="bg-basmati rounded-xl shadow-sm hover:shadow-xl overflow-hidden flex flex-col border border-bottle/10 transition-all duration-200 hover:-translate-y-1">
       <div className="relative h-56 w-full bg-basmati/50">
         {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.name} className="object-cover w-full h-full" />
+          <Image src={item.imageUrl} alt={item.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover" />
         ) : (
           <div className="flex items-center justify-center h-full text-bottle/40 font-serif text-xl tracking-wider">
             Zaiqa Signature

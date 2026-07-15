@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { AxiosError } from 'axios';
 import { Plus, Pencil, Trash2, Users } from 'lucide-react';
 
 interface RestaurantTable {
@@ -25,7 +26,6 @@ export default function AdminTablesPage() {
 
   const fetchTables = useCallback(async () => {
     try {
-      setLoading(true);
       const res = await api.get('/tables');
       if (res.data.success) {
         setTables(res.data.data);
@@ -39,7 +39,8 @@ export default function AdminTablesPage() {
   }, []);
 
   useEffect(() => {
-    fetchTables();
+    const timer = setTimeout(() => fetchTables(), 0);
+    return () => clearTimeout(timer);
   }, [fetchTables]);
 
   const openModal = (table?: RestaurantTable | null) => {
@@ -85,9 +86,13 @@ export default function AdminTablesPage() {
       
       closeModal();
       fetchTables();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.response?.data?.message || 'Failed to save table');
+      let message = 'Failed to save table';
+      if (err instanceof AxiosError) {
+        message = err.response?.data?.message || message;
+      }
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -99,9 +104,13 @@ export default function AdminTablesPage() {
         await api.delete(`/tables/${id}`);
         toast.success('Table deleted successfully');
         fetchTables();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        toast.error(err.response?.data?.message || 'Failed to delete table');
+        let message = 'Failed to delete table';
+        if (err instanceof AxiosError) {
+          message = err.response?.data?.message || message;
+        }
+        toast.error(message);
       }
     }
   };

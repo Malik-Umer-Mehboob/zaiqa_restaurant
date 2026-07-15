@@ -30,8 +30,14 @@ function fmtDate(raw: string) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+interface SalesTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number | string }>;
+  label?: string;
+}
+
 // Custom tooltip for sales area chart
-function SalesTooltip({ active, payload, label }: any) {
+function SalesTooltip({ active, payload, label }: SalesTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white border border-bottle/10 rounded-xl px-4 py-3 shadow-lg">
@@ -41,8 +47,13 @@ function SalesTooltip({ active, payload, label }: any) {
   );
 }
 
+interface PieTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number }>;
+}
+
 // Custom tooltip for pie chart
-function PieTooltip({ active, payload }: any) {
+function PieTooltip({ active, payload }: PieTooltipProps) {
   if (!active || !payload?.length) return null;
   const entry = payload[0];
   return (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useCartStore } from '@/store/cartStore';
@@ -32,20 +32,21 @@ export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const subtotal = getSubtotal();
   const tax = subtotal * 0.05;
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<CheckoutFormValues>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       orderType: 'TAKEAWAY',
     }
   });
 
-  const orderType = watch('orderType');
+  const orderType = useWatch({ control, name: 'orderType' });
   const deliveryFee = orderType === 'DELIVERY' ? 5.00 : 0.00;
   const total = subtotal + tax + deliveryFee;
 
@@ -92,7 +93,7 @@ export default function CheckoutPage() {
 
       // Step 3: Clear cart and redirect to Stripe hosted checkout page
       clearCart();
-      window.location.href = sessionRes.data.data.url;
+      window.location.assign(sessionRes.data.data.url);
 
     } catch (err: unknown) {
       console.error(err);

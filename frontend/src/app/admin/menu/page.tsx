@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import api from '@/lib/api';
+import Image from 'next/image';
 import { Pencil, Trash2, Plus, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { AxiosError } from 'axios';
@@ -415,9 +416,11 @@ export default function AdminMenu() {
                           <tr key={item.id} className="hover:bg-basmati/20 transition-colors group">
                             <td className="p-5">
                               {item.imageUrl ? (
-                                <img
+                                <Image
                                   src={item.imageUrl}
                                   alt={item.name}
+                                  width={64}
+                                  height={64}
                                   className="w-16 h-16 rounded-xl object-cover shadow-sm border border-bottle/5"
                                 />
                               ) : (
@@ -559,7 +562,7 @@ export default function AdminMenu() {
                 <label className="block text-xs font-bold text-ink/60 uppercase tracking-wider mb-2">Dish Image</label>
                 <div className="flex items-center gap-6">
                   {imagePreview ? (
-                    <img src={imagePreview} alt="Preview" className="w-24 h-24 rounded-xl object-cover border-2 border-bottle/10 shadow-sm shrink-0" />
+                    <Image src={imagePreview} alt="Preview" width={96} height={96} className="w-24 h-24 rounded-xl object-cover border-2 border-bottle/10 shadow-sm shrink-0" />
                   ) : (
                     <div className="w-24 h-24 rounded-xl border-2 border-dashed border-bottle/20 flex items-center justify-center text-bottle/30 shrink-0">
                       <ImageIcon size={32} />
